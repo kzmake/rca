@@ -1,0 +1,22 @@
+[package]
+name = "rca"
+version = "0.1.0"
+authors = ["kzmake <kazu.0516.k0n0f@gmail.com>"]
+edition = "2018"
+
+[[bin]]
+name = "rca"
+path = "src/main.rs"
+
+[profile.release]
+lto = true
+opt-level = 3
+codegen-units = 1
+
+[dependencies]
+actix = "0.8"
+actix-web = "1.0.8"
+env_logger = "0.7.1"
+serde = "1.0"
+serde_json = "1.0"
+serde_derive = "1.0"
