@@ -1,34 +1,55 @@
-extern crate actix;
-extern crate actix_web;
+#[macro_use]
+extern crate clap;
 
-use actix::prelude::*;
-use actix_web::middleware::Logger;
-use actix_web::{web, App, HttpServer, Responder};
-use env_logger;
+use std::process;
 
-fn index(name: web::Path<String>) -> impl Responder {
-    format!("Hello {}!", name)
+use infrastructure::handlers::tasks::TaskHandler;
+use interface::controllers::tasks::TaskController;
+use usecase::interactors::tasks::CreateTaskInteractor;
+
+mod app;
+mod cmd;
+
+use crate::app::App;
+
+fn run() -> Result<bool, String> {
+    let app = App::new()?;
+    println!("Debug: {:?}", app.matches);
+
+    let i = CreateTaskInteractor::new();
+    let c = TaskController::new(i);
+    let h = TaskHandler::new(c);
+
+    match app.matches.subcommand() {
+        ("new", Some(new_matches)) => match new_matches.subcommand() {
+            ("tasks", Some(task_matches)) => {
+                h.create(task_matches);
+                Ok(true)
+            }
+            ("", None) => Err(String::from("hoge")),
+            _ => Ok(true),
+        },
+        ("", None) => {
+            println!("No subcommand was used");
+            Ok(true)
+        }
+        _ => Ok(true),
+    }
 }
 
 fn main() {
-    let host = "127.0.0.1:3000";
-    let sys = System::new("rca");
+    let result = run();
 
-    std::env::set_var("RUST_LOG", "actix_web=info");
-    env_logger::init();
-
-    HttpServer::new(|| {
-        App::new()
-            .wrap(Logger::default())
-            .service(web::scope("/resources").route("/{name}", web::get().to(index)))
-    })
-    .workers(4)
-    .backlog(1024)
-    .bind(host)
-    .unwrap()
-    .start();
-
-    println!("Started http server: {}", host);
-
-    let _ = sys.run();
+    match result {
+        Err(_error) => {
+            // handle_error(&error);
+            process::exit(1);
+        }
+        Ok(false) => {
+            process::exit(1);
+        }
+        Ok(true) => {
+            process::exit(0);
+        }
+    }
 }

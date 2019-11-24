@@ -1,0 +1,9 @@
+[package]
+name = "interface"
+version = "0.1.0"
+authors = ["Kazuki Iwata <kazu.0516.k0n0f@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+domain = { path = "../domain", version = "0.1.0"}
+usecase = { path = "../usecase", version = "0.1.0"}
